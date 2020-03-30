@@ -26,8 +26,8 @@ public class stormKafkaTopology {
 
         builder.setSpout(KAFKA_SPOUT, kspout, numSpoutExecutors);
         builder.setBolt(FILTER_BOLT, TFBolt).shuffleGrouping(KAFKA_SPOUT);
-
-        builder.setBolt(KAFKA_WRITE_BOLT, KfBolt).shuffleGrouping(FILTER_BOLT);
+        builder.setBolt(KAFKA_WRITE_BOLT, KfBolt).shuffleGrouping(FILTER_BOLT,"stream1");
+        builder.setBolt(KAFKA_WRITE_ELSE_BOLT, KfBoltElse).shuffleGrouping(FILTER_BOLT,"stream2");
 
         Config conf = new Config();
         if (args != null && args.length > 0) {
