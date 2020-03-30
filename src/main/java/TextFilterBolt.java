@@ -17,9 +17,24 @@ public class TextFilterBolt extends BaseRichBolt  {
     }
     @Override
     public void execute(Tuple tuple) {
-	// Get Kafka msg from tuple - mind the types, sometimes Kafka returns bytes
-	// Emit if FILTER_KEY contains
-       	// ACK tuple 
+        Object value = tuple.getValue(0);
+        String sentence = null;
+        if (value instanceof String) {
+            sentence = (String) value;
+        } else {
+            // Kafka returns bytes
+            byte[] bytes = (byte[]) value;
+            try {
+                sentence = new String(bytes, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if(sentence.contains(FILTER_KEY)){
+            _collector.emit(new Values(sentence));
+        }
+        
+        _collector.ack(tuple);
     }
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {

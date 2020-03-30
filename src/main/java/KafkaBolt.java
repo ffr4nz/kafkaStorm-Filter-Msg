@@ -23,13 +23,18 @@ public class KafkaBolt extends BaseRichBolt {
     
     @Override
     public void prepare(Map conf, TopologyContext topologyContext, OutputCollector outputCollector) {
-    	// Configure Kafka connection
+        Properties props = new Properties();
+        props.put("metadata.broker.list", "localhost:9092");
+        props.put("serializer.class", "kafka.serializer.StringEncoder");
+        ProducerConfig config = new ProducerConfig(props);
+        producer = new Producer<>(config);
+        this.outputCollector=outputCollector;
     }
     @Override
     public void execute(Tuple tuple) {
-	// Prepare your kafka msg
-	// Send msg 
-	// ack msg
+        KeyedMessage<String, String> data = new KeyedMessage<>(topicName, tuple.getStringByField("kafka_text"));
+        producer.send(data);
+        outputCollector.ack(tuple);
     }
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {

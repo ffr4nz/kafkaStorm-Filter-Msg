@@ -16,14 +16,18 @@ public class stormKafkaTopology {
     private static final String TOPOLOGY_NAME = "MyTopologyKafkaStormSimple";
 
     public static void main(String[] args) throws Exception {
-	
         int numSpoutExecutors = 1;
         KafkaSpout kspout;
         kspout = buildKafkaSentenceSpout();
         TextFilterBolt TFBolt = new TextFilterBolt();
         KafkaBolt KfBolt = new KafkaBolt("kafkatopic2");
-        
-	// Create topology using KAFKA_SPOUT, FILTER_BOLT and KAFKA_WRITE_BOLT
+        KafkaBolt KfBoltElse = new KafkaBolt("kafkatopic3");
+        TopologyBuilder builder = new TopologyBuilder();
+
+        builder.setSpout(KAFKA_SPOUT, kspout, numSpoutExecutors);
+        builder.setBolt(FILTER_BOLT, TFBolt).shuffleGrouping(KAFKA_SPOUT);
+
+        builder.setBolt(KAFKA_WRITE_BOLT, KfBolt).shuffleGrouping(FILTER_BOLT);
 
         Config conf = new Config();
         if (args != null && args.length > 0) {
